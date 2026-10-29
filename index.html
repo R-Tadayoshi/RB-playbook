@@ -261,7 +261,7 @@ function tile(name,qty,q,extra){
   const cost=(c.e!=null&&c.t!=='Legend')?`<span class="cost">${c.e}</span>`:'';
   const might=c.m!=null?`<span class="mt">${c.m} M</span>`:'';
   const u=state.img?imgUrl(c,Math.max(240,state.size*2)):null;
-  const pic=u?`<img class="pic" src="${u}" alt="${esc(name)}" loading="lazy" referrerpolicy="no-referrer" data-name="${esc(name)}">`:'';
+  const pic=u?`<img class="pic" src="${u}" alt="${esc(name)}" loading="lazy" data-name="${esc(name)}">`:'';
   return `<article class="card${u?' hasimg':''}${hit?' hit':''}${q&&!hit&&extra!=='nodim'?' dim':''}" style="${stripe(c)}"${u?` data-open="${esc(name)}"`:''}>
     ${pic}<div class="face">
     <header>${cost}<h4>${hl(name,q)}</h4></header>
@@ -299,7 +299,7 @@ function renderList(){
     const m=L.meta;
     const lu=state.img?imgUrl(c,200):null;
     return `<button type="button" class="lg${lu?' haspic':''}${L.name===state.sel?' on':''}" data-leg="${esc(L.name)}" style="${stripe(c)}" aria-pressed="${L.name===state.sel}">
-      ${lu?`<img class="lgpic" src="${lu}" alt="" loading="lazy" referrerpolicy="no-referrer">`:''}
+      ${lu?`<img class="lgpic" src="${lu}" alt="" loading="lazy">`:''}
       <span class="lgtx"><span class="n">${esc(L.name)}</span>
       <span class="t">${esc(ds.join(' / '))}</span>
       <span class="st">${m?`<span><b>${m[3]}%</b> win</span><span><b>${m[0]}%</b> of field</span>`:'<span>Sacramento only</span>'}<span><b>${L.decks.length}</b> list${L.decks.length>1?'s':''}</span></span>
@@ -420,7 +420,7 @@ function init(){
     const a=e.target.closest('[data-open]');if(!a||!IMAGES||e.target.closest('a,button'))return;
     const nm=a.dataset.open,c=C[nm]||{};const dl=$('zoom');
     const u=imgUrl(c,600);
-    dl.querySelector('.zi').innerHTML=`<button type="button" class="btn ghost x" id="zx">Close</button>${u?`<img src="${u}" alt="${esc(nm)}" referrerpolicy="no-referrer">`:''}<div class="zt"><b>${esc(nm)}</b><br><span class="sub2">${esc([c.s,c.t].filter(Boolean).join(' '))}${c.e!=null&&c.t!=='Legend'?' &middot; cost '+c.e:''}${c.m!=null?' &middot; might '+c.m:''}</span><p style="margin-top:8px">${fxHtml(c.x)}</p></div>`;
+    dl.querySelector('.zi').innerHTML=`<button type="button" class="btn ghost x" id="zx">Close</button>${u?`<img src="${u}" alt="${esc(nm)}">`:''}<div class="zt"><b>${esc(nm)}</b><br><span class="sub2">${esc([c.s,c.t].filter(Boolean).join(' '))}${c.e!=null&&c.t!=='Legend'?' &middot; cost '+c.e:''}${c.m!=null?' &middot; might '+c.m:''}</span><p style="margin-top:8px">${fxHtml(c.x)}</p></div>`;
     dl.showModal();$('zx').onclick=()=>dl.close();
   });
   $('zoom').addEventListener('click',e=>{if(e.target===$('zoom'))$('zoom').close()});
