@@ -134,6 +134,10 @@ a{color:var(--accent)}
 .ic.r.any{background:linear-gradient(135deg,var(--calm),var(--chaos),var(--fury),var(--mind))}
 .noeff .fx{display:none}
 .qty{position:absolute;right:7px;bottom:7px;min-width:36px;text-align:center;padding:2px 8px;border-radius:999px;background:var(--fg);color:var(--bg);font-family:var(--mono);font-weight:500;font-size:14px;box-shadow:0 0 0 2px var(--tile)}
+.keynote{font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.card.key{box-shadow:0 0 0 3px #e0a526,0 0 12px rgba(224,165,38,.55)}
+.keyb{position:absolute;left:7px;top:7px;z-index:2;padding:2px 8px;border-radius:999px;background:#e0a526;color:#1a1300;font-family:var(--mono);font-size:12px;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.listview .card.key{box-shadow:none;background:rgba(224,165,38,.18)}.listview .keyb{position:static;order:5;margin-left:8px}
 .card.hit{outline:3px solid var(--accent);outline-offset:-1px}
 .card.dim{opacity:.5}
 .card .bot{height:30px;flex:none}
@@ -279,6 +283,7 @@ function guideHtml(L){
 function evNames(L){if(!L.decks.length)return 'Guide';const s=[...new Set(L.decks.map(d=>/^RQ/.test(d.event)?'LA':'Sacramento'))];return s.join(' + ')}
 function imgId(c){const m=/^([A-Za-z]+)-(\d+)/.exec(c&&c.id||'');return m?m[1].toUpperCase()+'-'+m[2]:null}
 function imgUrl(c,w){if(c&&c.i)return c.i;if(c&&c.p)return 'https://product-images.tcgplayer.com/fit-in/437x609/'+c.p+'.jpg';return null}
+let curKeys=new Set();
 function tile(name,qty,q,extra){
   const c=C[name]||{t:'?',d:[],g:[],x:'',e:null,m:null};
   const type=[c.s,c.t].filter(Boolean).join(' ');
@@ -288,11 +293,13 @@ function tile(name,qty,q,extra){
   const might=c.m!=null?`<span class="mt">${c.m} M</span>`:'';
   const u=state.img?imgUrl(c,Math.max(240,state.size*2)):null;
   const pic=u?`<img class="pic" src="${u}" alt="${esc(name)}" loading="lazy" referrerpolicy="no-referrer" data-name="${esc(name)}">`:'';
-  return `<article class="card${u?' hasimg':''}${hit?' hit':''}${q&&!hit&&extra!=='nodim'?' dim':''}" style="${stripe(c)}"${u?` data-open="${esc(name)}"`:''}>
+  const isKey=qty>0&&curKeys.has(name);
+  return `<article class="card${u?' hasimg':''}${hit?' hit':''}${isKey?' key':''}${q&&!hit&&extra!=='nodim'?' dim':''}" style="${stripe(c)}"${u?` data-open="${esc(name)}"`:''}>
     ${pic}<div class="face">
     <header>${cost}<h4>${hl(name,q)}</h4></header>
     <div class="cm"><span>${esc(type)}${tags.length?' · '+esc(tags.slice(0,3).join(' · ')):''}</span>${might}</div>
     <p class="fx">${fxHtml(c.x)}</p></div>
+    ${isKey?'<span class="keyb" title="Key card in the matchup guide">&#9733; Key</span>':''}
     ${qty?`<span class="qty">&times;${qty}</span><div class="bot"></div>`:''}
   </article>`;
 }
@@ -368,10 +375,11 @@ function renderDetail(){
   if(state.arch&&!archs.includes(state.arch))state.arch='';
   const pool=state.arch?L.decks.filter(x=>x.arch===state.arch):L.decks;
   if(!pool.includes(L.decks[state.deck])){state.deck=L.decks.indexOf(pool[0]);d=L.decks[state.deck]}
+  curKeys=new Set((L.guide||[]).flatMap(g=>g.keys||[]));
   const {n,m:cm}=core(pool);
   const sum=a=>a.reduce((s,x)=>s+x[0],0);
   const g=groups(d);
-  const coreChips=[...cm.entries()].filter(([k,o])=>o.d>=Math.ceil(n*0.75)).sort((a,b)=>b[1].t/b[1].d-a[1].t/a[1].d).map(([k,o])=>`<button type="button" class="chip" data-card="${esc(k)}">${esc(k)}<small>${(o.t/o.d).toFixed(1)}x avg</small></button>`).join('');
+  const coreChips=[...cm.entries()].filter(([k,o])=>o.d>=Math.ceil(n*0.75)).sort((a,b)=>b[1].t/b[1].d-a[1].t/a[1].d).map(([k,o])=>`<button type="button" class="chip" data-card="${esc(k)}">${curKeys.has(k)?'&#9733; ':''}${esc(k)}<small>${(o.t/o.d).toFixed(1)}x avg</small></button>`).join('');
   const inDeck=new Set(d.main.map(x=>x[1]));
   const tech=n>=3?d.main.filter(([k,nm])=>(cm.get(nm).d/n)<0.4).map(([k,nm])=>`<button type="button" class="chip" data-card="${esc(nm)}">${k}x ${esc(nm)}<small>${cm.get(nm).d}/${n} lists</small></button>`).join(''):'';
   const deckText=['Legend: '+L.name,'Champion: '+d.champion,'','Main:',...d.main.map(x=>x[0]+' '+x[1]),'','Battlefields: '+d.bf.join(', '),'Runes: '+Object.entries(d.runes).map(([k,v])=>v+' '+k).join(', '),'','Sideboard:',...d.side.map(x=>x[0]+' '+x[1])].join('\n');
@@ -406,6 +414,7 @@ function renderDetail(){
         <label><input type="checkbox" id="lv" ${state.list?'checked':''}> Text list</label>
         <label>Card size <select id="sz"><option value="130">Small</option><option value="190">Medium</option><option value="250">Large</option></select></label>
         <button type="button" class="btn ghost" id="copy">Copy list</button>
+        ${curKeys.size?'<span class="keynote"><b class="keyb" style="position:static">&#9733; Key</b> = key card from the matchup guide</span>':''}
       </div>
       <textarea id="copybox" hidden readonly aria-label="Deck list text" style="margin-top:10px"></textarea>
     </div>
