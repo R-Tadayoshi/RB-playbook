@@ -252,6 +252,7 @@ function hl(text,q){
   const i=text.toLowerCase().indexOf(q);if(i<0)return t;
   return esc(text.slice(0,i))+'<mark>'+esc(text.slice(i,i+q.length))+'</mark>'+esc(text.slice(i+q.length));
 }
+function evNames(L){const s=[...new Set(L.decks.map(d=>/^RQ/.test(d.event)?'LA':'Sacramento'))];return s.join(' + ')}
 function imgId(c){const m=/^([A-Za-z]+)-(\d+)/.exec(c&&c.id||'');return m?m[1].toUpperCase()+'-'+m[2]:null}
 function imgUrl(c,w){if(c&&c.i)return c.i;if(c&&c.p)return 'https://product-images.tcgplayer.com/fit-in/437x609/'+c.p+'.jpg';return null}
 function tile(name,qty,q,extra){
@@ -303,7 +304,7 @@ function renderList(){
       ${lu?`<img class="lgpic" src="${lu}" alt="" loading="lazy" referrerpolicy="no-referrer">`:''}
       <span class="lgtx"><span class="n">${esc(L.name)}</span>
       <span class="t">${esc(ds.join(' / '))}</span>
-      <span class="st">${m?`<span><b>${m[3]}%</b> win</span><span><b>${m[0]}%</b> of field</span>`:'<span>Sacramento only</span>'}<span><b>${L.decks.length}</b> list${L.decks.length>1?'s':''}</span></span>
+      <span class="st">${m?`<span><b>${m[3]}%</b> win</span><span><b>${m[0]}%</b> of field</span>`:'<span>'+evNames(L)+' only</span>'}<span><b>${L.decks.length}</b> list${L.decks.length>1?'s':''}</span></span>
       ${hitInfo(L,state.q)?`<span class="hit">${hitInfo(L,state.q)}</span>`:''}</span>
     </button>`}).join('');
 }
@@ -342,7 +343,7 @@ function renderDetail(){
     <p class="eyebrow">Legend</p>
     <div class="d-head"><h2>${esc(L.name)}</h2></div>
     <div class="chips">${legDoms(L).map(x=>`<span class="pill"><span class="dot d-${x.toLowerCase()}"></span>${x}</span>`).join('')}
-      ${m&&m[1]<40?'<span class="pill warn">Small sample</span>':''}${!m?'<span class="pill warn">Sacramento only</span>':''}</div>
+      ${m&&m[1]<40?'<span class="pill warn">Small sample</span>':''}${!m?'<span class="pill warn">'+esc(evNames(L))+' only</span>':''}</div>
     ${m?`<dl class="stats"><div class="stat"><dt>Share of field</dt><dd>${m[0]}%</dd></div><div class="stat"><dt>Win rate</dt><dd>${m[3]}%</dd></div><div class="stat"><dt>Players</dt><dd>${m[1]}</dd></div><div class="stat"><dt>Top 8 spots</dt><dd>${m[2]}</dd></div></dl>
     <p class="statnote">Last 30 days, all builds of this legend (RiftAtlas / TopDeck.gg).</p>`:''}
     <div class="sec"><h3>Legend card</h3><div class="grid" style="--tw:260px;max-width:300px">${tile(L.name,0,'','nodim')}</div></div>
